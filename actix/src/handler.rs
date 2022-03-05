@@ -1,4 +1,4 @@
-use std::{fmt, future::Future, pin::Pin, sync::Arc};
+use std::{fmt, future::Future, pin::Pin, sync::Arc, rc::Rc, borrow::Cow};
 
 pub use tokio::sync::oneshot::Sender as OneshotSender;
 
@@ -43,10 +43,27 @@ where
     type Result = M::Result;
 }
 
+/// Allow users to use `Rc<M>` as a message without having to re-impl `Message`
+impl<M> Message for Rc<M>
+where
+    M: Message,
+{
+    type Result = M::Result;
+}
+
 /// Allow users to use `Box<M>` as a message without having to re-impl `Message`
 impl<M> Message for Box<M>
 where
     M: Message,
+{
+    type Result = M::Result;
+}
+
+/// Allows users to use `Cow<'static, M>` as a message without having to re-impl `Message`
+impl <M> Message for Cow<'static, M>
+where
+    M: Message,
+    M: Clone,
 {
     type Result = M::Result;
 }
